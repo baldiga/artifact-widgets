@@ -1,0 +1,38 @@
+ARTIFACT WIDGETS — pin your Claude artifacts to your Mac desktop as live widgets
+==============================================================================
+
+Needs macOS 14 (Sonoma) or newer. Works on Apple Silicon and Intel Macs.
+
+INSTALL
+1. Drag "Artifact Widgets" onto the Applications folder in this window.
+2. Open it from Applications. The first time, macOS will block it, because
+   the app isn't from the App Store or a registered Apple developer:
+     - Click "Done" (or "OK") on the warning.
+     - Open System Settings → Privacy & Security, scroll down, and click
+       "Open Anyway" next to "Artifact Widgets". Confirm with your password.
+   You only do this once.
+
+FIRST RUN
+3. A "Sign in to Claude" window opens. Sign in with your claude.ai account.
+   (If Google sign-in is blocked, use the email code option.)
+   The window closes by itself when you're in.
+4. Click the grid icon in the menu bar → New Widget → From Your Account,
+   and pick an artifact. Add as many widgets as you like.
+
+USING WIDGETS
+- Hover a widget: a small pill appears in its top-right corner.
+    Arrows icon: drag to move (or hold ⌘ and drag anywhere on the widget).
+    ≡ button: switch artifact, reload, auto-refresh, zoom, remove.
+- Drag a widget's edge to resize it.
+- Widgets sit on your desktop: above desktop icons, below your other windows.
+  Menu bar → "Keep Widgets Above Windows" floats them on top instead.
+- Menu bar → "Launch at Login" brings them back after a restart.
+
+GOOD TO KNOW
+- Unofficial and not made by Anthropic. It shows claude.ai pages in a
+  built-in browser and hides claude.ai's toolbars. If claude.ai changes
+  its pages, parts of this may stop working until the app is updated.
+- Your sign-in and settings stay on your Mac:
+  ~/Library/Application Support/ArtifactWidgets/
+- To uninstall: quit it from the menu bar, delete the app, and delete the
+  folder above.
