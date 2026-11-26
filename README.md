@@ -8,6 +8,7 @@
 [![Swift](https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white)](Sources/main.swift)
 [![Universal](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-universal-blue)](#build-from-source)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Download](https://img.shields.io/github/v/release/baldiga/artifact-widgets?label=download&logo=apple&color=d97757)](https://github.com/baldiga/artifact-widgets/releases/latest)
 
 **Pin your [Claude](https://claude.ai) artifacts to the macOS desktop as live, interactive widgets.**
 Dashboards, trackers, scorecards, and anything else you've published as an artifact.
@@ -32,7 +33,7 @@ Artifacts are great, but they live in a browser tab. Artifact Widgets puts the o
 
 ## Install
 
-1. Download **`Artifact-Widgets-1.0.dmg`**, open it, and drag the app to **Applications**.
+1. Download **[`Artifact-Widgets-1.0.dmg`](https://github.com/baldiga/artifact-widgets/releases/latest/download/Artifact-Widgets-1.0.dmg)** from the [latest release](https://github.com/baldiga/artifact-widgets/releases/latest), open it, and drag the app to **Applications**.
 2. Launch it. The app isn't signed with an Apple developer ID, so the first launch needs **System Settings → Privacy & Security → Open Anyway** (one time only).
 3. Sign in to claude.ai in the window that opens, then click the grid icon in the menu bar → **New Widget → From Your Account**.
 
@@ -59,6 +60,8 @@ cd artifact-widgets
 ./build.sh --install    # build and install to ~/Applications
 ./build.sh --package    # build and make dist/Artifact-Widgets-1.0.dmg
 ```
+
+Releases are built the same way by GitHub Actions on a Mac runner ([`.github/workflows/release.yml`](.github/workflows/release.yml)): bump `VERSION` in `build.sh`, then run the **Release** workflow from the Actions tab (or push a `v<VERSION>` tag) and the DMG is attached to a new release.
 
 `build.sh` compiles `Sources/main.swift` for arm64 and x86_64, merges them with `lipo`, adds the icon (`Resources/AppIcon.icns`, drawn by `tools/make_icon.swift`) and ad-hoc signs the bundle.
 

@@ -1,0 +1,78 @@
+# Builds "Artifact Widgets.app" on a macOS runner and publishes the DMG as a GitHub Release.
+#
+# Two ways to publish (the version comes from VERSION= in build.sh):
+#   1. Actions tab → "Release" → "Run workflow"   (creates tag v<VERSION> on the chosen branch)
+#   2. git tag v1.0 && git push origin v1.0        (tag must match VERSION in build.sh)
+#
+# Running it again for the same version replaces the DMG on the existing release.
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' build.sh)
+          [[ -n "$VERSION" ]] || { echo "::error::No VERSION= line in build.sh"; exit 1; }
+          TAG="v$VERSION"
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "$TAG" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match VERSION=\"$VERSION\" in build.sh (expected $TAG)"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build and package
+        run: |
+          swiftc --version
+          # hdiutil on hosted runners sometimes fails with "Resource busy"; retry a few times.
+          for i in 1 2 3; do ./build.sh --package && break; [[ $i == 3 ]] && exit 1; sleep 10; done
+          DMG="dist/Artifact-Widgets-${{ steps.version.outputs.version }}.dmg"
+          test -f "$DMG"
+          hdiutil verify "$DMG"
+          shasum -a 256 "$DMG" | tee "$DMG.sha256"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          DMG="dist/Artifact-Widgets-$VERSION.dmg"
+          SHA=$(cut -d' ' -f1 "$DMG.sha256")
+          cat > notes.md <<NOTES
+          ## Install
+
+          1. Download **Artifact-Widgets-$VERSION.dmg** below, open it, and drag the app to **Applications**.
+          2. Launch it. The app isn't signed with an Apple developer ID, so the first launch needs **System Settings → Privacy & Security → Open Anyway** (one time only).
+          3. Sign in to claude.ai in the window that opens, then click the grid icon in the menu bar → **New Widget → From Your Account**.
+
+          Requires macOS 14 (Sonoma) or newer, on Apple Silicon or Intel. Unofficial, and not affiliated with or endorsed by Anthropic.
+
+          SHA-256: \`$SHA\`
+          NOTES
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$DMG" "$DMG.sha256" --clobber
+          else
+            gh release create "$TAG" "$DMG" "$DMG.sha256" \
+              --title "Artifact Widgets $VERSION" \
+              --notes-file notes.md \
+              --target "$GITHUB_SHA"
+          fi
+          echo "Published: $(gh release view "$TAG" --json url -q .url)" >> "$GITHUB_STEP_SUMMARY"
